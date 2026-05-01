@@ -1,46 +1,48 @@
-import { NextAuthOptions } from "next-auth"
-import CredentialProvider from "next-auth/providers/credentials"
-import { connectToDatabase } from "./db"
-import User from "@/models/User"
-import bcrypt from "bcryptjs"
+import { NextAuthConfig } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { connectToDatabase } from "./db";
+import UserModel from "../models/User";
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthConfig = {
   providers: [
-    CredentialProvider({
-      name : "credentials",
-      credentials : {
-        email : {label : "email",type : "email"},
-        password : {label : "password",type : "password"},
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        
-     if(!credentials?.email || !credentials.password) throw new Error("Missing email or password")
-      
-      try {
-        await connectToDatabase()
-        const user = User.findOne({email: credentials.email})
-        if(!user) {
-          throw new Error("user not found")
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Missing email or password");
         }
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
-        
-        if(!isValid) {
-          throw new Error("password not match")
+        try {
+          await connectToDatabase();
+          const user = await UserModel.findOne({ email: credentials.email });
+
+          if (!user || !user.password) {
+            throw new Error("No user found with this email");
+          }
+
+          const isValid = await bcrypt.compare(
+            String(credentials.password),
+            user.password
+          );
+
+          if (!isValid) {
+            throw new Error("Invalid password");
+          }
+
+          return {
+            id: user._id.toString(),
+            email: user.email,
+          };
+        } catch (error) {
+          console.error("Auth error:", error);
+          throw error;
         }
-        return {
-          id:user._id.toString(),
-          email:user.email
-        }
-      } catch (error) {
-        console.log(error)
-        return null
-      }
       },
-
-    })
+    }),
   ],
 }
