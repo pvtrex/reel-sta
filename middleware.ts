@@ -1,34 +1,30 @@
-import { withAuth } from "next-auth/middleware";
+import { auth } from "./lib/auth";
 import { NextResponse } from "next/server";
 
-export default withAuth(
-  function middleware() {
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+
+  // Allow auth-related routes
+  if (
+    pathname.startsWith("/api/auth") ||
+    pathname === "/login" ||
+    pathname === "/register"
+  ) {
     return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl;
-
-        // Allow auth-related routes
-        if (
-          pathname.startsWith("/api/auth") ||
-          pathname === "/login" ||
-          pathname === "/register"
-        ) {
-          return true;
-        }
-
-        // Public routes
-        if (pathname === "/" || pathname.startsWith("/api/videos")) {
-          return true;
-        }
-        // All other routes require authentication
-        return !!token;
-      },
-    },
   }
-);
+
+  // Public routes
+  if (pathname === "/" || pathname.startsWith("/api/videos")) {
+    return NextResponse.next();
+  }
+
+  // All other routes require authentication
+  if (!req.auth) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  return NextResponse.next();
+});
 
 export const config = {
   matcher: [
