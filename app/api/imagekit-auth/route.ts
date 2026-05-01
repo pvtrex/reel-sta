@@ -1,20 +1,16 @@
-import Imagekit from "imagekit";
-import { NextRequest, NextResponse } from "next/server";
-
-const imagekit = new Imagekit({
-    publicKey: process.env.NEXT_PUBLIC_PUBLIC_KEY as string,
-    privateKey: process.env.IMAGEKIT_PRIVATE_KEY as string,
-    urlEndpoint: process.env.NEXT_PUBLIC_URL_ENDPOINT as string,
-});
+import { getUploadAuthParams } from "@imagekit/next/server"
 
 export async function GET() {
+    // Your application logic to authenticate the user
+    // For example, you can check if the user is logged in or has the necessary permissions
+    // If the user is not authenticated, you can return an error response
 
-    try {
-        return NextResponse.json(imagekit.getAuthenticationParameters())
-    } catch (error) {
-        console.log(error)
-        return NextResponse.json({ error: "ImageKit auth Failed" }, { status: 500 })
-    }
+    const { token, expire, signature } = getUploadAuthParams({
+        privateKey: process.env.IMAGEKIT_PRIVATE_KEY as string, // Never expose this on client side
+        publicKey: process.env.IMAGEKIT_PUBLIC_KEY as string,
+        // expire: 30 * 60, // Optional, controls the expiry time of the token in seconds, maximum 1 hour in the future
+        // token: "random-token", // Optional, a unique token for request
+    })
 
-
+    return Response.json({ token, expire, signature, publicKey: process.env.IMAGEKIT_PUBLIC_KEY })
 }

@@ -1,0 +1,21 @@
+"use client"
+import { ImageKitProvider } from "@imagekit/next"
+import { SessionProvider } from "next-auth/react"
+const urlEndpoint = process.env.NEXT_PUBLIC_URL_ENDPOINT || ""
+
+
+export default function Providers({ children }: { children: React.ReactNode }) {
+
+    return (
+
+      <SessionProvider>
+         <ImageKitProvider
+            urlEndpoint={urlEndpoint}
+        >
+            {children}
+        </ImageKitProvider>
+        </SessionProvider>
+
+
+    )
+}

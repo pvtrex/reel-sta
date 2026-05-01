@@ -1,8 +1,6 @@
 import NextAuth, { NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { connectToDatabase } from "./db";
-import UserModel from "../models/User";
 
 const authOptions: NextAuthConfig = {
   providers: [
@@ -18,6 +16,10 @@ const authOptions: NextAuthConfig = {
         }
 
         try {
+          // Dynamically import database modules to avoid loading them in edge runtime (middleware)
+          const { connectToDatabase } = await import("./db");
+          const UserModel = (await import("../models/User")).default;
+
           await connectToDatabase();
           const user = await UserModel.findOne({ email: credentials.email });
 
