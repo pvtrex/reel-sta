@@ -32,4 +32,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       </NotificationProvider>
     </SessionProvider>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 29918cf65ad23af40f215411a3bd84847398af4a
