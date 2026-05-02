@@ -1,8 +1,10 @@
-import NextAuth, { NextAuthConfig } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { connectToDatabase } from "./db";
+import UserModel from "../models/User";
 
-const authOptions: NextAuthConfig = {
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -16,21 +18,17 @@ const authOptions: NextAuthConfig = {
         }
 
         try {
-          // Dynamically import database modules to avoid loading them in edge runtime (middleware)
-          const { connectToDatabase } = await import("./db");
-          const UserModel = (await import("../models/User")).default;
-
           await connectToDatabase();
           const user = await UserModel.findOne({ email: credentials.email });
 
-          if (!user || !user.password) {
+          if (!user) {
             throw new Error("No user found with this email");
           }
 
           const isValid = await bcrypt.compare(
-            String(credentials.password),
+            credentials.password,
             user.password
-          ); 
+          );
 
           if (!isValid) {
             throw new Error("Invalid password");
@@ -47,31 +45,27 @@ const authOptions: NextAuthConfig = {
       },
     }),
   ],
-  callbacks:{
-    async  jwt({token,user}){
-      if(user){
-        token.id = user.id
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
       }
-      return token
+      return token;
     },
-    async  session({session, token}){
-      if(session.user){
-        session.user.id = token.id as string
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
       }
-      return session
-    }
-
+      return session;
+    },
   },
-  pages:{
-    signIn:"/login",
-    error:"/login"
+  pages: {
+    signIn: "/login",
+    error: "/login",
   },
-  session:{
+  session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60,
-    
   },
   secret: process.env.NEXTAUTH_SECRET,
-}
-
-export const { auth, handlers, signIn, signOut } = NextAuth(authOptions)
+};

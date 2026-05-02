@@ -17,11 +17,11 @@ const userSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
-userSchema.pre("save", async function () { // Remove 'next' parameter
+userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 10);
   }
-  // Just return (implicitly returns Promise)
+  next();
 });
 
 const User = models?.User || model<IUser>("User", userSchema);
