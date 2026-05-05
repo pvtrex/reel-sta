@@ -41,8 +41,4 @@ export const config = {
      */
     "/((?!_next/static|_next/image|favicon.ico|public/).*)",
   ],
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> 29918cf65ad23af40f215411a3bd84847398af4a

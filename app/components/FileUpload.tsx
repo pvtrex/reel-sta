@@ -91,8 +91,4 @@ export default function FileUpload({
       {error && <div className="text-error text-sm">{error}</div>}
     </div>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 29918cf65ad23af40f215411a3bd84847398af4a

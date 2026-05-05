@@ -31,7 +31,7 @@ export default function Header() {
             }
           >
             <Home className="w-5 h-5" />
-            ImageKit ReelsPro
+            InstaPro
           </Link>
         </div>
         <div className="flex flex-1 justify-end px-2">
@@ -66,6 +66,17 @@ export default function Header() {
                         }
                       >
                         Video Upload
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/upload-image"
+                        className="px-4 py-2 hover:bg-base-200 block w-full"
+                        onClick={() =>
+                          showNotification("Welcome to Admin Dashboard", "info")
+                        }
+                      >
+                        Image Upload
                       </Link>
                     </li>
 

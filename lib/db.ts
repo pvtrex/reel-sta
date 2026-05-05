@@ -38,8 +38,4 @@ export async function connectToDatabase() {
   }
 
   return cached.conn;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 29918cf65ad23af40f215411a3bd84847398af4a

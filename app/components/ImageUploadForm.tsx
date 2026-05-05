@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -9,14 +9,14 @@ import { apiClient } from "@/lib/api-client";
 import FileUpload from "./FileUpload";
 import { useRouter } from "next/navigation";
 
-interface VideoFormData {
+interface ImageFormData {
   title: string;
   description: string;
-  videoUrl: string;
+  imageUrl: string;
   thumbnailUrl: string;
 }
 
-export default function VideoUploadForm() {
+export default function ImageUploadForm() {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { showNotification } = useNotification();
@@ -27,46 +27,47 @@ export default function VideoUploadForm() {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<VideoFormData>({
+  } = useForm<ImageFormData>({
     defaultValues: {
       title: "",
       description: "",
-      videoUrl: "",
+      imageUrl: "",
       thumbnailUrl: "",
     },
   });
 
   const handleUploadSuccess = (response: IKUploadResponse) => {
-    setValue("videoUrl", response.filePath);
-    setValue("thumbnailUrl", response.thumbnailUrl || response.filePath);
-    showNotification("Video uploaded successfully!", "success");
+    setValue("imageUrl", response.filePath);
+    setValue("thumbnailUrl", response.thumbnailUrl);
+   
+    showNotification("Image uploaded successfully!", "success");
   };
 
   const handleUploadProgress = (progress: number) => {
     setUploadProgress(progress);
   };
 
-  const onSubmit = async (data: VideoFormData) => {
-    if (!data.videoUrl) {
-      showNotification("Please upload a video first", "error");
+  const onSubmit = async (data: ImageFormData) => {
+    if (!data.imageUrl) {
+      showNotification("Please upload an image first", "error");
       return;
     }
 
     setLoading(true);
     try {
-      await apiClient.createVideo(data);
-      showNotification("Video published successfully!", "success");
+      await apiClient.createImage(data);
+      showNotification("Image published successfully!", "success");
 
       // Reset form after successful submission
       setValue("title", "");
       setValue("description", "");
-      setValue("videoUrl", "");
+      setValue("imageUrl", "");
       setValue("thumbnailUrl", "");
       setUploadProgress(0);
       router.push("/");
     } catch (error) {
       showNotification(
-        error instanceof Error ? error.message : "Failed to publish video",
+        error instanceof Error ? error.message : "Failed to publish image",
         "error"
       );
     } finally {
@@ -108,9 +109,9 @@ export default function VideoUploadForm() {
       </div>
 
       <div className="form-control">
-        <label className="label">Upload Video</label>
+        <label className="label">Upload Image</label>
         <FileUpload
-          fileType="video"
+          fileType="image"
           onSuccess={handleUploadSuccess}
           onProgress={handleUploadProgress}
         />
@@ -132,10 +133,10 @@ export default function VideoUploadForm() {
         {loading ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Publishing Video...
+            Publishing Image...
           </>
         ) : (
-          "Publish Video"
+          "Publish Image"
         )}
       </button>
     </form>

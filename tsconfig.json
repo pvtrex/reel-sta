@@ -11,11 +11,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-<<<<<<< HEAD
     "jsx": "preserve",
-=======
-    "jsx": "react-jsx",
->>>>>>> 29918cf65ad23af40f215411a3bd84847398af4a
     "incremental": true,
     "plugins": [
       {
@@ -31,12 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-<<<<<<< HEAD
     "scripts/**/*.ts"
-=======
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
->>>>>>> 29918cf65ad23af40f215411a3bd84847398af4a
   ],
   "exclude": ["node_modules"]
 }
