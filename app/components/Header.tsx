@@ -31,7 +31,7 @@ export default function Header() {
             }
           >
             <Home className="w-5 h-5" />
-            ImageKit ReelsPro
+            InstaPro
           </Link>
         </div>
         <div className="flex flex-1 justify-end px-2">
