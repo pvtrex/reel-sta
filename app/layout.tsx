@@ -6,9 +6,10 @@ import Header from "./components/Header";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "ImageKit Next.js Integration",
+  title: "InstaPro - ImageKit Next.js Integration",
   description: "Demo of ImageKit integration with Next.js",
 };
+
 
 export default function RootLayout({
   children,
