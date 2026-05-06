@@ -32,11 +32,7 @@ export default function Home() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <AniLoader size={18} />
-      </div>
-    );
+    return <AniLoader size={18} fixed />;
   }
 
   return (

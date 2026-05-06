@@ -38,10 +38,7 @@ export default function Login() {
   return (
     <div className="max-w-md mx-auto relative">
       {loading && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
-          <AniLoader size={16} />
-          <p className="mt-4 font-bold text-blue-600">Logging in...</p>
-        </div>
+        <AniLoader size={18} fixed />
       )}
       <h1 className="text-2xl font-bold mb-4">Login</h1>
       <form onSubmit={handleSubmit} className="space-y-4">

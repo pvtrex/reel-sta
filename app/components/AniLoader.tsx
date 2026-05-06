@@ -6,11 +6,12 @@ import styled from 'styled-components';
 
 interface AniLoaderProps {
   size?: number;
+  fixed?: boolean;
 }
 
-const AniLoader = ({ size = 14 }: AniLoaderProps) => {
+const AniLoader = ({ size = 14, fixed = false }: AniLoaderProps) => {
   return (
-    <StyledWrapper $size={size}>
+    <StyledWrapper $size={size} $fixed={fixed}>
       <div aria-label="Orange and tan hamster running in a metal wheel" role="img" className="wheel-and-hamster">
         <div className="wheel" />
         <div className="hamster">
@@ -33,10 +34,21 @@ const AniLoader = ({ size = 14 }: AniLoaderProps) => {
   );
 }
 
-const StyledWrapper = styled.div<{ $size: number }>`
+const StyledWrapper = styled.div<{ $size: number; $fixed: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  ${props => props.$fixed && `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    pointer-events: none;
+    background: transparent;
+  `}
   
   .wheel-and-hamster {
     --dur: 1s;
