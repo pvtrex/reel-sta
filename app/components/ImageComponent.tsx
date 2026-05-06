@@ -11,18 +11,25 @@ export default function ImageComponent({ image }: { image: IImage }) {
           className="rounded-xl overflow-hidden relative w-full"
           style={{ aspectRatio: "9/16" }}
         >
-          <IKImage
-            path={image.imageUrl.startsWith("http") ? undefined : image.imageUrl}
-            src={image.imageUrl.startsWith("http") ? image.imageUrl : undefined}
-            alt={image.title}
-            transformation={[
-              {
-                height: "1920",
-                width: "1080",
-              },
-            ]}
-            className="w-full h-full object-cover"
-          />
+          {image.imageUrl.startsWith("http") ? (
+            <img
+              src={image.imageUrl}
+              alt={image.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <IKImage
+              path={image.imageUrl}
+              alt={image.title}
+              transformation={[
+                {
+                  height: "1920",
+                  width: "1080",
+                },
+              ]}
+              className="w-full h-full object-cover"
+            />
+          )}
         </div>
       </figure>
 

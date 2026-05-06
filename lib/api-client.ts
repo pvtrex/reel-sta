@@ -26,6 +26,7 @@ class ApiClient {
       method,
       headers: defaultHeaders,
       body: body ? JSON.stringify(body) : undefined,
+      credentials: "include",
     });
 
     if (!response.ok) {

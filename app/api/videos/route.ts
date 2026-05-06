@@ -21,14 +21,24 @@ export async function GET() {
     }
 
     // Sign the video URLs
-    const signedVideos = videos.map(video => ({
-      ...video,
-      videoUrl: imagekit.url({
-        path: video.videoUrl,
+    const signedVideos = videos.map(video => {
+      const urlOptions: any = {
         signed: true,
-        expireSeconds: 3600 // 1 hour
-      })
-    }));
+        expireSeconds: 3600, // 1 hour
+        transformation: [{ height: "1920", width: "1080" }]
+      };
+
+      if (video.videoUrl.startsWith("http")) {
+        urlOptions.src = video.videoUrl;
+      } else {
+        urlOptions.path = video.videoUrl;
+      }
+
+      return {
+        ...video,
+        videoUrl: imagekit.url(urlOptions),
+      };
+    });
 
     return NextResponse.json(signedVideos);
   } catch (error) {

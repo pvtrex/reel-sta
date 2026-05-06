@@ -28,7 +28,7 @@ export default function Login() {
         showNotification(result.error, "error");
       } else {
         showNotification("Login successful!", "success");
-        router.push("/");
+        window.location.href = "/";
       }
     } finally {
       setLoading(false);

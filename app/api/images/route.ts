@@ -17,14 +17,24 @@ export async function GET() {
     const images = await Image.find({}).sort({ createdAt: -1 }).lean();
 
     // Sign the image URLs
-    const signedImages = images.map(image => ({
-      ...image,
-      imageUrl: imagekit.url({
-        path: image.imageUrl,
+    const signedImages = images.map(image => {
+      const urlOptions: any = {
         signed: true,
-        expireSeconds: 3600 // 1 hour
-      })
-    }));
+        expireSeconds: 3600, // 1 hour
+        transformation: [{ height: "1920", width: "1080" }]
+      };
+
+      if (image.imageUrl.startsWith("http")) {
+        urlOptions.src = image.imageUrl;
+      } else {
+        urlOptions.path = image.imageUrl;
+      }
+
+      return {
+        ...image,
+        imageUrl: imagekit.url(urlOptions),
+      };
+    });
 
     return NextResponse.json(signedImages);
   } catch (error) {

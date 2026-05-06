@@ -10,17 +10,25 @@ export default function VideoComponent({ video }: { video: IVideo }) {
           className="rounded-xl overflow-hidden relative w-full"
           style={{ aspectRatio: "9/16" }}
         >
-          <IKVideo
-            path={video.videoUrl}
-            transformation={[
-              {
-                height: "1920",
-                width: "1080",
-              },
-            ]}
-            controls={video.controls}
-            className="w-full h-full object-cover"
-          />
+          {video.videoUrl.startsWith("http") ? (
+            <video
+              src={video.videoUrl}
+              controls={video.controls}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <IKVideo
+              path={video.videoUrl}
+              transformation={[
+                {
+                  height: "1920",
+                  width: "1080",
+                },
+              ]}
+              controls={video.controls}
+              className="w-full h-full object-cover"
+            />
+          )}
         </div>
       </figure>
 
