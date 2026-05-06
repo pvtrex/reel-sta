@@ -1,6 +1,6 @@
-# ImageKit Video Shop
+# Social rex
 
-A modern Next.js application for managing and selling video content using ImageKit integration. This project provides a full-featured platform with user authentication, video upload capabilities, and payment processing using Razorpay.
+A modern Next.js application for couples to share their private memories, videos, and images securely. This project acts as a private cloud and social platform tailored for couples.
 
 ## Features
 

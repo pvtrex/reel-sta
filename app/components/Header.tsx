@@ -29,11 +29,11 @@ export default function Header() {
             className="btn btn-ghost text-xl gap-2 normal-case font-bold"
             prefetch={true}
             onClick={() =>
-              showNotification("Welcome to InstaPro", "info")
+              showNotification("Welcome to Social rex", "info")
             }
           >
             <Homeicon />
-            InstaPro
+            Social rex
           </Link>
         </div>
         <div className="flex flex-1 justify-end px-2">
