@@ -6,10 +6,10 @@ import Header from "./components/Header";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Instapro - ImageKit Next.js Integration",
-  description: "Demo of ImageKit integration with Next.js",
+  title: "Instapro",
+  description: "A cloud for Couples",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.svg",
   },
 };
 
