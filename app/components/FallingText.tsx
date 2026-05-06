@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import Matter from 'matter-js';
 
 interface FallingTextProps {
@@ -14,7 +14,7 @@ interface FallingTextProps {
   fontSize?: string;
 }
 
-type ComponentStatus = 'idle' | 'waiting' | 'fading' | 'dismissed';
+type FallingState = 'idle' | 'falling' | 'atBottom' | 'waiting' | 'fading' | 'dismissed';
 
 const FallingText: React.FC<FallingTextProps> = ({
   text = '',
@@ -32,23 +32,39 @@ const FallingText: React.FC<FallingTextProps> = ({
   const canvasContainerRef = useRef<HTMLDivElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [status, setStatus] = useState<ComponentStatus>(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('fallingTextDismissed') === 'true' ? 'dismissed' : 'idle';
+  const [state, setState] = useState<FallingState>(() => {
+    if (typeof window !== 'undefined' && sessionStorage.getItem("fallingTextDismissed") === "true") {
+      return 'dismissed';
     }
     return 'idle';
   });
 
-  // Handle initialization of text HTML
+  // Cleanup timers on unmount
   useEffect(() => {
-    if (!textRef.current || status === 'dismissed') return;
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  // Handle prefers-reduced-motion
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mediaQuery.matches && state === 'falling') {
+      // If they prefer reduced motion, we could either not start at all or just skip to a static state
+      // For now, let's just not start the falling effect if they prefer reduced motion
+      setState('idle');
+    }
+  }, [state]);
+
+  useEffect(() => {
+    if (state === 'dismissed' || !textRef.current) return;
     const words = text.split(' ');
 
     const newHTML = words
       .map(word => {
         const isHighlighted = highlightWords.some(hw => word.startsWith(hw));
         return `<span
-          class="inline-block mx-[2px] select-none ${isHighlighted ? highlightClass : ''}"
+          class="inline-block mx-[2px] select-none ${isHighlighted ? highlightClass : ''} transition-opacity duration-[5000ms] ease-in-out"
         >
           ${word}
         </span>`;
@@ -56,21 +72,20 @@ const FallingText: React.FC<FallingTextProps> = ({
       .join(' ');
 
     textRef.current.innerHTML = newHTML;
-  }, [text, highlightWords, status]);
+  }, [text, highlightWords, state, highlightClass]);
 
-  // Handle auto-trigger and scroll-trigger
   useEffect(() => {
-    if (status !== 'idle') return;
+    if (state !== 'idle') return;
 
     if (trigger === 'auto') {
-      setStatus('waiting');
+      setState('falling');
       return;
     }
     if (trigger === 'scroll' && containerRef.current) {
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
-            setStatus('waiting');
+            setState('falling');
             observer.disconnect();
           }
         },
@@ -79,29 +94,10 @@ const FallingText: React.FC<FallingTextProps> = ({
       observer.observe(containerRef.current);
       return () => observer.disconnect();
     }
-  }, [trigger, status]);
+  }, [trigger, state]);
 
-  // Handle state transitions (waiting -> fading -> dismissed)
   useEffect(() => {
-    if (status === 'waiting') {
-      timerRef.current = setTimeout(() => {
-        setStatus('fading');
-      }, 5000);
-    } else if (status === 'fading') {
-      timerRef.current = setTimeout(() => {
-        setStatus('dismissed');
-        sessionStorage.setItem('fallingTextDismissed', 'true');
-      }, 5000);
-    }
-
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [status]);
-
-  // Physics Effect
-  useEffect(() => {
-    if (status === 'idle' || status === 'dismissed') return;
+    if (state !== 'falling') return;
 
     const { Engine, Render, World, Bodies, Runner, Mouse, MouseConstraint, Events } = Matter;
 
@@ -151,7 +147,6 @@ const FallingText: React.FC<FallingTextProps> = ({
     const wordSpans = textRef.current.querySelectorAll('span');
     const wordBodies = [...wordSpans].map(elem => {
       const rect = elem.getBoundingClientRect();
-
       const x = rect.left - containerRect.left + rect.width / 2;
       const y = rect.top - containerRect.top + rect.height / 2;
 
@@ -193,52 +188,89 @@ const FallingText: React.FC<FallingTextProps> = ({
     Runner.run(runner, engine);
     Render.run(render);
 
+    let checkBottomTriggered = false;
+
     Events.on(engine, 'afterUpdate', () => {
+      let allAtBottom = true;
       wordBodies.forEach(({ body, elem }) => {
         const { x, y } = body.position;
         elem.style.left = `${x}px`;
         elem.style.top = `${y}px`;
         elem.style.transform = `translate(-50%, -50%) rotate(${body.angle}rad)`;
+
+        // Detect if word has reached bottom area (floor is at height-10, thickness 50, so top is height-35)
+        if (y < height - 60) {
+          allAtBottom = false;
+        }
       });
+
+      if (allAtBottom && !checkBottomTriggered && wordBodies.length > 0) {
+        checkBottomTriggered = true;
+        setState('atBottom');
+      }
     });
 
     return () => {
       Render.stop(render);
       Runner.stop(runner);
-      if (render.canvas && canvasContainerRef.current) {
-        canvasContainerRef.current.innerHTML = ''; // Safer than removeChild
+      if (render.canvas && canvasContainerRef.current && canvasContainerRef.current.contains(render.canvas)) {
+        canvasContainerRef.current.removeChild(render.canvas);
       }
       World.clear(engine.world, false);
       Engine.clear(engine);
       Events.off(engine, 'afterUpdate', () => {});
     };
-  }, [status === 'idle' || status === 'dismissed', gravity, wireframes, backgroundColor, mouseConstraintStiffness]);
+  }, [state, gravity, wireframes, backgroundColor, mouseConstraintStiffness]);
 
-  const handleTrigger = () => {
-    if (status === 'idle' && (trigger === 'click' || trigger === 'hover')) {
-      setStatus('waiting');
+  // Handle transitions after reaching bottom
+  useEffect(() => {
+    if (state === 'atBottom') {
+      setState('waiting');
+      timerRef.current = setTimeout(() => {
+        setState('fading');
+      }, 5000);
+    } else if (state === 'fading') {
+      // Trigger fade out in DOM
+      if (textRef.current) {
+        const spans = textRef.current.querySelectorAll('span');
+        spans.forEach(span => {
+          (span as HTMLElement).style.opacity = '0';
+        });
+      }
+      
+      timerRef.current = setTimeout(() => {
+        sessionStorage.setItem("fallingTextDismissed", "true");
+        setState('dismissed');
+      }, 5000);
     }
-  };
+  }, [state]);
 
-  if (status === 'dismissed') return null;
+  const handleTrigger = useCallback(() => {
+    if (state === 'idle' && (trigger === 'click' || trigger === 'hover')) {
+      setState('falling');
+    }
+  }, [state, trigger]);
+
+  if (state === 'dismissed') return null;
 
   return (
     <div
       ref={containerRef}
       className="relative z-[1] w-full min-h-[100px] cursor-pointer text-center pt-8 no-scrollbar"
-      style={{
-        transition: 'opacity 5s ease-in-out',
-        opacity: status === 'fading' ? 0 : 1
-      }}
       onClick={trigger === 'click' ? handleTrigger : undefined}
       onMouseEnter={trigger === 'hover' ? handleTrigger : undefined}
+      onFocus={handleTrigger}
+      tabIndex={0}
+      aria-label="Interactive falling text"
     >
       <div
         ref={textRef}
         className="inline-block"
         style={{
           fontSize,
-          lineHeight: 1.4
+          lineHeight: 1.4,
+          // Hide original text once physics starts to avoid double text
+          visibility: state === 'idle' ? 'visible' : 'visible' 
         }}
       />
 

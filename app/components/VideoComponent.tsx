@@ -18,13 +18,7 @@ export default function VideoComponent({ video }: { video: IVideo }) {
             />
           ) : (
             <IKVideo
-              path={video.videoUrl}
-              transformation={[
-                {
-                  height: "1920",
-                  width: "1080",
-                },
-              ]}
+              src={video.videoUrl}
               controls={video.controls}
               className="w-full h-full object-cover"
             />
