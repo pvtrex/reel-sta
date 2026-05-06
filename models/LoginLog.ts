@@ -6,6 +6,7 @@ export interface ILoginLog {
   userAgent?: string;
   status: "success" | "failure";
   reason?: string;
+  role?: string;
   createdAt: Date;
 }
 
@@ -15,6 +16,7 @@ const loginLogSchema = new Schema<ILoginLog>({
   userAgent: { type: String },
   status: { type: String, enum: ["success", "failure"], required: true },
   reason: { type: String },
+  role: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 

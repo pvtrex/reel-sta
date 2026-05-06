@@ -8,6 +8,7 @@ import { apiClient } from "@/lib/api-client";
 import AniLoader from "./components/AniLoader";
 import FallingText from './components/FallingText';
 
+
 export default function Home() {
   const [videos, setVideos] = useState<IVideo[]>([]);
   const [images, setImages] = useState<IImage[]>([]);

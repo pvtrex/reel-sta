@@ -5,6 +5,11 @@ import { connectToDatabase } from "./db";
 import UserModel from "../models/User";
 import LoginLog from "../models/LoginLog";
 
+const ADMIN_WHITELIST = [
+  "zhenrime@gmail.com",
+  "mu1246101@gnkhalsa.edu.in",
+];
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -52,16 +57,22 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Invalid password");
           }
 
+          // Hard restrict access to admins only if required by user
+          // For now, we just tag them with the role
+          const isAdmin = ADMIN_WHITELIST.includes(user.email);
+
           await LoginLog.create({
             email: credentials.email,
             ipAddress: ip,
             userAgent,
             status: "success",
+            role: isAdmin ? "admin" : "user",
           });
 
           return {
             id: user._id.toString(),
             email: user.email,
+            role: isAdmin ? "admin" : "user",
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -74,12 +85,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.role = (user as any).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        (session.user as any).id = token.id as string;
+        (session.user as any).role = token.role as string;
       }
       return session;
     },

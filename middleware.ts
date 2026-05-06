@@ -19,11 +19,22 @@ export default withAuth(
           return true;
         }
 
-        // Public routes
+        // Public routes (Allow viewing, but sensitive data will be handled at API level if needed)
         if (pathname === "/" || pathname.startsWith("/api/videos")) {
           return true;
         }
-        // All other routes require authentication
+
+        // Admin-only routes
+        if (
+          pathname.startsWith("/api/reels") ||
+          pathname.startsWith("/api/media") ||
+          pathname.startsWith("/api/users") ||
+          pathname.startsWith("/admin")
+        ) {
+          return token?.role === "admin";
+        }
+
+        // All other routes require basic authentication
         return !!token;
       },
     },
