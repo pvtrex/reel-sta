@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NPM_FLAGS = "--legacy-peer-deps"
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_PUBLIC_KEY,NEXT_PUBLIC_URL_ENDPOINT"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
