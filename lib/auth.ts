@@ -5,7 +5,7 @@ import { connectToDatabase } from "./db";
 import UserModel from "../models/User";
 import LoginLog from "../models/LoginLog";
 
-const ADMIN_WHITELIST = [
+export const ADMIN_WHITELIST = [
   "zhenrime@gmail.com",
   "mu1246101@gnkhalsa.edu.in",
 ];
@@ -57,9 +57,19 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Invalid password");
           }
 
-          // Hard restrict access to admins only if required by user
-          // For now, we just tag them with the role
+          // Hard restrict access to admins only
           const isAdmin = ADMIN_WHITELIST.includes(user.email);
+
+          if (!isAdmin) {
+            await LoginLog.create({
+              email: credentials.email,
+              ipAddress: ip,
+              userAgent,
+              status: "failure",
+              reason: "Unauthorized email",
+            });
+            throw new Error("Access denied: You are not authorized to log in.");
+          }
 
           await LoginLog.create({
             email: credentials.email,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import User from "@/models/User";
+import { ADMIN_WHITELIST } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +11,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Email and password are required" },
         { status: 400 }
+      );
+    }
+
+    // Restriction: Only allow whitelisted emails
+    if (!ADMIN_WHITELIST.includes(email)) {
+      return NextResponse.json(
+        { error: "Access denied: This email is not authorized for registration." },
+        { status: 403 }
       );
     }
 
