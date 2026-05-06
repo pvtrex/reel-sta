@@ -17,8 +17,8 @@ export default {
   },
   plugins: [daisyui],
   daisyui: {
-    themes: ["dark"],
-    darkTheme: "dark",
+    themes: ["halloween"],
+    darkTheme: "halloween",
   },
   darkMode: "class",
 } satisfies Config;
