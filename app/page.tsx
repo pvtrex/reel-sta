@@ -38,7 +38,7 @@ export default function Home() {
 
   return (
     <main className="container mx-auto px-4 py-8 overflow-x-hidden">
-      <h1 className="text-3xl font-bold mb-8 ">Social rex <p className="text-lg mb-6 text-gray-500">Hover to Start Uploading Your Memories</p>
+      <h1 className="text-3xl font-bold mb-8 ">Social rex <p className="text-lg mb-6 text-gray-500">Hover or Click to Start Uploading Your Memories</p>
      </h1>
         
 
