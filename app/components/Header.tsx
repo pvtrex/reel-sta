@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Home, User } from "lucide-react";
 import { useNotification } from "./Notification";
+import Homeicon from "./Homeicon";
+import AniLoader from "./AniLoader";
 
 export default function Header() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { showNotification } = useNotification();
 
   const handleSignOut = async () => {
@@ -27,10 +29,10 @@ export default function Header() {
             className="btn btn-ghost text-xl gap-2 normal-case font-bold"
             prefetch={true}
             onClick={() =>
-              showNotification("Welcome to ImageKit ReelsPro", "info")
+              showNotification("Welcome to InstaPro", "info")
             }
           >
-            <Home className="w-5 h-5" />
+            <Homeicon />
             InstaPro
           </Link>
         </div>
@@ -48,7 +50,11 @@ export default function Header() {
                 tabIndex={0}
                 className="dropdown-content z-[1] shadow-lg bg-base-100 rounded-box w-64 mt-4 py-2"
               >
-                {session ? (
+                {status === "loading" ? (
+                  <li className="px-4 py-4 flex justify-center">
+                    <AniLoader size={4} />
+                  </li>
+                ) : session ? (
                   <>
                     <li className="px-4 py-1">
                       <span className="text-sm opacity-70">

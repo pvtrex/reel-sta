@@ -3,7 +3,7 @@
 import { IKUpload } from "imagekitio-next";
 import { IKUploadResponse } from "imagekitio-next/dist/types/components/IKUpload/props";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import AniLoader from "./AniLoader";
 
 interface FileUploadProps {
   onSuccess: (res: IKUploadResponse) => void;
@@ -83,7 +83,7 @@ export default function FileUpload({
 
       {uploading && (
         <div className="flex items-center gap-2 text-sm text-primary">
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <AniLoader size={4} />
           <span>Uploading...</span>
         </div>
       )}

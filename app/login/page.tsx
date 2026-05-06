@@ -5,31 +5,44 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useNotification } from "../components/Notification";
 import Link from "next/link";
+import AniLoader from "../components/AniLoader";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { showNotification } = useNotification();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    setLoading(true);
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    if (result?.error) {
-      showNotification(result.error, "error");
-    } else {
-      showNotification("Login successful!", "success");
-      router.push("/");
+      if (result?.error) {
+        showNotification(result.error, "error");
+      } else {
+        showNotification("Login successful!", "success");
+        router.push("/");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="max-w-md mx-auto relative">
+      {loading && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
+          <AniLoader size={16} />
+          <p className="mt-4 font-bold text-blue-600">Logging in...</p>
+        </div>
+      )}
       <h1 className="text-2xl font-bold mb-4">Login</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

@@ -5,10 +5,12 @@ import VideoFeed, { ImageFeed } from "./components/VideoFeed";
 import { IVideo } from "@/models/Video";
 import { IImage } from "@/models/Image";
 import { apiClient } from "@/lib/api-client";
+import AniLoader from "./components/AniLoader";
 
 export default function Home() {
   const [videos, setVideos] = useState<IVideo[]>([]);
   const [images, setImages] = useState<IImage[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,15 +23,25 @@ export default function Home() {
         setImages(imagesData);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <AniLoader size={18} />
+      </div>
+    );
+  }
+
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">ImageKit ReelsPro</h1>
+      <h1 className="text-3xl font-bold mb-8">Instapro</h1>
       
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Videos</h2>
