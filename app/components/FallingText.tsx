@@ -32,9 +32,11 @@ const FallingText: React.FC<FallingTextProps> = ({
   const [effectStarted, setEffectStarted] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [isFading, setIsFading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Check session storage on mount
   useEffect(() => {
+    setMounted(true);
     const dismissed = sessionStorage.getItem("fallingTextDismissed");
     if (dismissed === "true") {
       setIsDismissed(true);
@@ -225,7 +227,7 @@ const FallingText: React.FC<FallingTextProps> = ({
     }
   };
 
-  if (isDismissed) return null;
+  if (!mounted || isDismissed) return null;
 
   return (
     <div
