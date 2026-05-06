@@ -20,7 +20,11 @@ export default withAuth(
         }
 
         // Public routes (Allow viewing, but sensitive data will be handled at API level if needed)
-        if (pathname === "/" || pathname.startsWith("/api/videos")) {
+        if (
+          pathname === "/" ||
+          pathname.startsWith("/api/videos") ||
+          pathname.startsWith("/api/images")
+        ) {
           return true;
         }
 

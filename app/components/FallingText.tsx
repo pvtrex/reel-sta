@@ -30,6 +30,36 @@ const FallingText: React.FC<FallingTextProps> = ({
   const canvasContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [effectStarted, setEffectStarted] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
+  const [isFading, setIsFading] = useState(false);
+
+  // Check session storage on mount
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem("fallingTextDismissed");
+    if (dismissed === "true") {
+      setIsDismissed(true);
+    }
+  }, []);
+
+  // Handle fade out and dismissal sequence
+  useEffect(() => {
+    if (effectStarted && trigger === 'hover') {
+      // 5 seconds delay before starting fade
+      const fadeTimer = setTimeout(() => {
+        setIsFading(true);
+        
+        // 5 seconds duration for fade animation
+        const dismissalTimer = setTimeout(() => {
+          setIsDismissed(true);
+          sessionStorage.setItem("fallingTextDismissed", "true");
+        }, 5000);
+
+        return () => clearTimeout(dismissalTimer);
+      }, 5000);
+
+      return () => clearTimeout(fadeTimer);
+    }
+  }, [effectStarted, trigger]);
 
   useEffect(() => {
     if (!textRef.current) return;
@@ -195,10 +225,17 @@ const FallingText: React.FC<FallingTextProps> = ({
     }
   };
 
+  if (isDismissed) return null;
+
   return (
     <div
       ref={containerRef}
       className="relative z-[1] w-full min-h-[100px] cursor-pointer text-center pt-8 no-scrollbar"
+      style={{
+        opacity: isFading ? 0 : 1,
+        transition: isFading ? 'opacity 5s ease-in-out' : 'none',
+        pointerEvents: isFading ? 'none' : 'auto'
+      }}
       onClick={trigger === 'click' ? handleTrigger : undefined}
       onMouseEnter={trigger === 'hover' ? handleTrigger : undefined}
     >
