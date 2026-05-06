@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import Matter from 'matter-js';
 
 interface FallingTextProps {
@@ -13,6 +13,8 @@ interface FallingTextProps {
   mouseConstraintStiffness?: number;
   fontSize?: string;
 }
+
+type ComponentStatus = 'idle' | 'waiting' | 'fading' | 'dismissed';
 
 const FallingText: React.FC<FallingTextProps> = ({
   text = '',
@@ -28,11 +30,18 @@ const FallingText: React.FC<FallingTextProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const textRef = useRef<HTMLDivElement | null>(null);
   const canvasContainerRef = useRef<HTMLDivElement | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [effectStarted, setEffectStarted] = useState(false);
+  const [status, setStatus] = useState<ComponentStatus>(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('fallingTextDismissed') === 'true' ? 'dismissed' : 'idle';
+    }
+    return 'idle';
+  });
 
+  // Handle initialization of text HTML
   useEffect(() => {
-    if (!textRef.current) return;
+    if (!textRef.current || status === 'dismissed') return;
     const words = text.split(' ');
 
     const newHTML = words
@@ -47,18 +56,21 @@ const FallingText: React.FC<FallingTextProps> = ({
       .join(' ');
 
     textRef.current.innerHTML = newHTML;
-  }, [text, highlightWords]);
+  }, [text, highlightWords, status]);
 
+  // Handle auto-trigger and scroll-trigger
   useEffect(() => {
+    if (status !== 'idle') return;
+
     if (trigger === 'auto') {
-      setEffectStarted(true);
+      setStatus('waiting');
       return;
     }
     if (trigger === 'scroll' && containerRef.current) {
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
-            setEffectStarted(true);
+            setStatus('waiting');
             observer.disconnect();
           }
         },
@@ -67,10 +79,29 @@ const FallingText: React.FC<FallingTextProps> = ({
       observer.observe(containerRef.current);
       return () => observer.disconnect();
     }
-  }, [trigger]);
+  }, [trigger, status]);
 
+  // Handle state transitions (waiting -> fading -> dismissed)
   useEffect(() => {
-    if (!effectStarted) return;
+    if (status === 'waiting') {
+      timerRef.current = setTimeout(() => {
+        setStatus('fading');
+      }, 5000);
+    } else if (status === 'fading') {
+      timerRef.current = setTimeout(() => {
+        setStatus('dismissed');
+        sessionStorage.setItem('fallingTextDismissed', 'true');
+      }, 5000);
+    }
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [status]);
+
+  // Physics Effect
+  useEffect(() => {
+    if (status === 'idle' || status === 'dismissed') return;
 
     const { Engine, Render, World, Bodies, Runner, Mouse, MouseConstraint, Events } = Matter;
 
@@ -78,11 +109,8 @@ const FallingText: React.FC<FallingTextProps> = ({
 
     const containerRect = containerRef.current.getBoundingClientRect();
     const width = containerRect.width;
-    
-    // Get absolute top position relative to document
     const containerTop = containerRect.top + window.scrollY;
     
-    // Get total document height
     const docHeight = Math.max(
       document.body.scrollHeight,
       document.documentElement.scrollHeight,
@@ -91,7 +119,6 @@ const FallingText: React.FC<FallingTextProps> = ({
       document.documentElement.clientHeight
     );
     
-    // Total height from container top to bottom of page (with 20px buffer to prevent scroll)
     const height = Math.max(docHeight - containerTop - 20, containerRect.height);
 
     if (width <= 0 || height <= 0) return;
@@ -115,7 +142,6 @@ const FallingText: React.FC<FallingTextProps> = ({
       render: { fillStyle: 'transparent' }
     };
 
-    // Boundaries - floor is slightly above the bottom to prevent scroll expansion
     const floor = Bodies.rectangle(width / 2, height - 10, width, 50, boundaryOptions);
     const leftWall = Bodies.rectangle(-25, height / 2, 50, height, boundaryOptions);
     const rightWall = Bodies.rectangle(width + 25, height / 2, 50, height, boundaryOptions);
@@ -167,7 +193,6 @@ const FallingText: React.FC<FallingTextProps> = ({
     Runner.run(runner, engine);
     Render.run(render);
 
-    // Sync DOM with physics bodies
     Events.on(engine, 'afterUpdate', () => {
       wordBodies.forEach(({ body, elem }) => {
         const { x, y } = body.position;
@@ -181,24 +206,30 @@ const FallingText: React.FC<FallingTextProps> = ({
       Render.stop(render);
       Runner.stop(runner);
       if (render.canvas && canvasContainerRef.current) {
-        canvasContainerRef.current.removeChild(render.canvas);
+        canvasContainerRef.current.innerHTML = ''; // Safer than removeChild
       }
       World.clear(engine.world, false);
       Engine.clear(engine);
       Events.off(engine, 'afterUpdate', () => {});
     };
-  }, [effectStarted, gravity, wireframes, backgroundColor, mouseConstraintStiffness]);
+  }, [status === 'idle' || status === 'dismissed', gravity, wireframes, backgroundColor, mouseConstraintStiffness]);
 
   const handleTrigger = () => {
-    if (!effectStarted && (trigger === 'click' || trigger === 'hover')) {
-      setEffectStarted(true);
+    if (status === 'idle' && (trigger === 'click' || trigger === 'hover')) {
+      setStatus('waiting');
     }
   };
+
+  if (status === 'dismissed') return null;
 
   return (
     <div
       ref={containerRef}
       className="relative z-[1] w-full min-h-[100px] cursor-pointer text-center pt-8 no-scrollbar"
+      style={{
+        transition: 'opacity 5s ease-in-out',
+        opacity: status === 'fading' ? 0 : 1
+      }}
       onClick={trigger === 'click' ? handleTrigger : undefined}
       onMouseEnter={trigger === 'hover' ? handleTrigger : undefined}
     >
@@ -219,4 +250,4 @@ const FallingText: React.FC<FallingTextProps> = ({
   );
 };
 
-export default FallingText;
+export default FallingText;
