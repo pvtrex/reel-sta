@@ -10,20 +10,11 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
 
-        // Allow auth-related routes
+        // Public routes (Allow ONLY basic auth related routes)
         if (
           pathname.startsWith("/api/auth") ||
           pathname === "/login" ||
           pathname === "/register"
-        ) {
-          return true;
-        }
-
-        // Public routes (Allow viewing, but sensitive data will be handled at API level if needed)
-        if (
-          pathname === "/" ||
-          pathname.startsWith("/api/videos") ||
-          pathname.startsWith("/api/images")
         ) {
           return true;
         }

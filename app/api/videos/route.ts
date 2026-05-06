@@ -4,8 +4,15 @@ import { authOptions } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db";
 import Video, { IVideo } from "@/models/Video";
 
+import { imagekit } from "@/lib/imagekit";
+
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     await connectToDatabase();
     const videos = await Video.find({}).sort({ createdAt: -1 }).lean();
 
@@ -13,7 +20,17 @@ export async function GET() {
       return NextResponse.json([], { status: 200 });
     }
 
-    return NextResponse.json(videos);
+    // Sign the video URLs
+    const signedVideos = videos.map(video => ({
+      ...video,
+      videoUrl: imagekit.url({
+        path: video.videoUrl,
+        signed: true,
+        expireSeconds: 3600 // 1 hour
+      })
+    }));
+
+    return NextResponse.json(signedVideos);
   } catch (error) {
     console.error("Error fetching videos:", error);
     return NextResponse.json(
