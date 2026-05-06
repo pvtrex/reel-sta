@@ -7,13 +7,17 @@ import { useNotification } from "./Notification";
 import Homeicon from "./Homeicon";
 import AniLoader from "./AniLoader";
 
+import { useRouter } from "next/navigation";
+
 export default function Header() {
   const { data: session, status } = useSession();
   const { showNotification } = useNotification();
+  const router = useRouter();
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      await signOut({ redirect: false });
+      router.push("/");
       showNotification("Signed out successfully", "success");
     } catch {
       showNotification("Failed to sign out", "error");
