@@ -34,25 +34,15 @@ export async function POST(request: NextRequest) {
     if (
       !body.title ||
       !body.description ||
-      !body.imageUrl ||
-      !body.thumbnailUrl
+      !body.imageUrl
     ) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields (title, description, imageUrl)" },
         { status: 400 }
       );
     }
 
-    const imageData = {
-      ...body,
-      transformation: body.transformation || {
-        height: 1920,
-        width: 1080,
-        quality: 100,
-      },
-    };
-
-    const newImage = await Image.create(imageData);
+    const newImage = await Image.create(body);
     return NextResponse.json(newImage);
   } catch (error) {
     console.error("Error creating image:", error);

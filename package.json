@@ -18,6 +18,8 @@
     "bcryptjs": "^2.4.3",
     "daisyui": "^4.12.20",
     "dotenv": "^16.4.7",
+    "ffmpeg": "^0.0.4",
+    "fluent-ffmpeg": "^2.1.3",
     "imagekit": "^6.0.0",
     "imagekitio-next": "^1.0.1",
     "jsonwebtoken": "^9.0.2",
@@ -32,9 +34,11 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.0",
+    "sharp": "^0.34.5",
     "styled-components": "^6.4.1"
   },
   "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.28",
     "@types/matter-js": "^0.20.2",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.17",

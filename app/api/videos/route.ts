@@ -38,24 +38,17 @@ export async function POST(request: NextRequest) {
     if (
       !body.title ||
       !body.description ||
-      !body.videoUrl ||
-      !body.thumbnailUrl
+      !body.videoUrl
     ) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields (title, description, videoUrl)" },
         { status: 400 }
       );
     }
 
-    // Create new video with default values
     const videoData = {
       ...body,
       controls: body.controls ?? true,
-      transformation: {
-        height: 1920,
-        width: 1080,
-        quality: body.transformation?.quality ?? 100,
-      },
     };
 
     const newVideo = await Video.create(videoData);
@@ -63,7 +56,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating video:", error);
     return NextResponse.json(
-      { error: "Failed to create video" },
+      { error: error instanceof Error ? error.message : "Failed to create video" },
       { status: 500 }
     );
   }

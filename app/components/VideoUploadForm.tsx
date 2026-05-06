@@ -13,7 +13,6 @@ interface VideoFormData {
   title: string;
   description: string;
   videoUrl: string;
-  thumbnailUrl: string;
 }
 
 export default function VideoUploadForm() {
@@ -32,13 +31,11 @@ export default function VideoUploadForm() {
       title: "",
       description: "",
       videoUrl: "",
-      thumbnailUrl: "",
     },
   });
 
   const handleUploadSuccess = (response: IKUploadResponse) => {
     setValue("videoUrl", response.filePath);
-    setValue("thumbnailUrl", response.thumbnailUrl || response.filePath);
     showNotification("Video uploaded successfully!", "success");
   };
 
@@ -61,7 +58,6 @@ export default function VideoUploadForm() {
       setValue("title", "");
       setValue("description", "");
       setValue("videoUrl", "");
-      setValue("thumbnailUrl", "");
       setUploadProgress(0);
       router.push("/");
     } catch (error) {

@@ -13,7 +13,6 @@ interface ImageFormData {
   title: string;
   description: string;
   imageUrl: string;
-  thumbnailUrl: string;
 }
 
 export default function ImageUploadForm() {
@@ -32,14 +31,11 @@ export default function ImageUploadForm() {
       title: "",
       description: "",
       imageUrl: "",
-      thumbnailUrl: "",
     },
   });
 
   const handleUploadSuccess = (response: IKUploadResponse) => {
     setValue("imageUrl", response.filePath);
-    setValue("thumbnailUrl", response.thumbnailUrl);
-   
     showNotification("Image uploaded successfully!", "success");
   };
 
@@ -62,7 +58,6 @@ export default function ImageUploadForm() {
       setValue("title", "");
       setValue("description", "");
       setValue("imageUrl", "");
-      setValue("thumbnailUrl", "");
       setUploadProgress(0);
       router.push("/");
     } catch (error) {
